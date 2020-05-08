@@ -1,5 +1,6 @@
 using namespace std;
 #include<iostream>
+#include <math.h>
 
 class Product
 {
@@ -18,7 +19,7 @@ public:
     {
 
     }
-    Product(char* name, int timeToExp,char* dateOfEntry, char* supplier, char* unit, double amount, unsigned int location, char* note)
+    Product(char* name, int timeToExp,char* dateOfEntry, char* supplier, char* unit, double amount, char* note)
     {
         this->name = name;
         this->timeToExp = timeToExp;
@@ -26,19 +27,9 @@ public:
         this->supplier = supplier;
         this->unit = unit;
         this->amount = amount;
-        this->location = location;
         this->note = note;
     }
-        Product(char* name, int timeToExp,char* dateOfEntry, char* supplier, char* unit, double amount, unsigned int location)
-    {
-        this->name = name;
-        this->timeToExp = timeToExp;
-        this->dateOfEntry = dateOfEntry;
-        this->supplier = supplier;
-        this->unit = unit;
-        this->amount = amount;
-        this->location = location;
-    }
+
             Product(char* name, int timeToExp,char* dateOfEntry, char* supplier, char* unit, double amount)
     {
         this->name = name;
@@ -47,6 +38,7 @@ public:
         this->supplier = supplier;
         this->unit = unit;
         this->amount = amount;
+        this->note = "No note set";
     }
     void setLocation(unsigned int location)
     {
@@ -59,37 +51,62 @@ public:
 
 
 };
-Product* kokakola [2][2];
-bool mirrorTable [2][2];
+const int sizeOfShelf = 10;
+Product* kokakola[sizeOfShelf][sizeOfShelf][sizeOfShelf];
+bool mirrorTable[sizeOfShelf][sizeOfShelf][sizeOfShelf];
 
 void FillMirrorTable()
 {
-    for(int i=0;i<2;i++)
+    for(int i=0;i<sizeOfShelf;i++)
     {
-        for(int j=0;j<2;j++)
+        for(int j=0;j<sizeOfShelf;j++)
         {
-            mirrorTable[i][j] = false;
+            for(int k=0;k<sizeOfShelf;k++)
+            {
+                mirrorTable[i][j][k] = false;
+
+            }
+        }
+    }
+}
+void PrintMirrorTable()
+{
+    for(int i=0;i<sizeOfShelf;i++)
+    {
+        for(int j=0;j<sizeOfShelf;j++)
+        {
+            for(int k=0;k<sizeOfShelf;k++)
+            {
+                if(mirrorTable[i][j][k])
+            {cout<<"There is a product at: "<<"i"<<i<<" j"<<j<<endl;
+            }
+            }
         }
     }
 }
 unsigned int SearchForFreeSpace(unsigned int spaceNeeded)
 {
+    cout<<"WE ARE SEARCHING"<<endl;
     unsigned int currentSpace;
-    for(int i=0;i<2;i++)
+    for(int i=0;i<sizeOfShelf;i++)
     {
         currentSpace = 0;
         //За да сме сигурни, че продуктът ни е за един ред
-        for(int j=0;j<2;j++)
+        for(int j=0;j<sizeOfShelf;j++)
         {
-            if(mirrorTable[i][j] = false)
+            for(int k=0;k<sizeOfShelf;k++)
             {
-                currentSpace++;
-                if(currentSpace==spaceNeeded)
+                if(mirrorTable[i][j][k] == false)
                 {
-                    return i*100+(j-spaceNeeded);
+                    currentSpace++;
+                    if(currentSpace==spaceNeeded)
+                    {
+                        cout<<"space found at: "<<i*pow(sizeOfShelf,2)+j*sizeOfShelf+(k-spaceNeeded+1)<<endl;
+                        return i*pow(sizeOfShelf,2)+j*sizeOfShelf+(k-spaceNeeded+1);
+                    }
                 }
+                else currentSpace = 0;
             }
-            else currentSpace = 0;
         }
     }
 
@@ -98,26 +115,40 @@ void PutTheProduct(unsigned int positionToPlaceOn,unsigned int spaceNeeded)
 {
     for(int i=0;i<spaceNeeded;i++)
     {
-        mirrorTable[positionToPlaceOn/100][positionToPlaceOn%100 + i] = true;
+        cout<<positionToPlaceOn/pow(sizeOfShelf,2)<<" "<<positionToPlaceOn/sizeOfShelf<<" "<<positionToPlaceOn%sizeOfShelf + i<<endl;
+        mirrorTable[positionToPlaceOn/sizeOfShelf*sizeOfShelf][positionToPlaceOn/sizeOfShelf][positionToPlaceOn%sizeOfShelf + i] = true;
     }
 }
 void AddNewProduct(Product* newProduct)
 {
-    unsigned int spaceNeeded = newProduct->getAmount()/50;
+    cout<<"AddNewProduct"<<endl;
+    unsigned int spaceNeeded = newProduct->getAmount()/50+1;
     unsigned int positionToPlaceOn = SearchForFreeSpace(spaceNeeded);
     newProduct->setLocation(positionToPlaceOn);
-    kokakola[positionToPlaceOn/100][positionToPlaceOn%100] = newProduct;
+    kokakola[positionToPlaceOn/sizeOfShelf*sizeOfShelf][positionToPlaceOn/sizeOfShelf][positionToPlaceOn%sizeOfShelf] = newProduct;
+    PutTheProduct(positionToPlaceOn,spaceNeeded);
+
+}
+void AddNewProduct(char* name, int timeToExp,char* dateOfEntry, char* supplier, char* unit, double amount)
+{
+    cout<<"Creating and adding a new Product"<<endl;
+    Product* newProduct = new Product(name,timeToExp,dateOfEntry,supplier,unit,amount);
+    unsigned int spaceNeeded = newProduct->getAmount()/50+1;
+    unsigned int positionToPlaceOn = SearchForFreeSpace(spaceNeeded);
+    newProduct->setLocation(positionToPlaceOn);
+    kokakola[positionToPlaceOn/sizeOfShelf*sizeOfShelf][positionToPlaceOn/sizeOfShelf][positionToPlaceOn%sizeOfShelf] = newProduct;
     PutTheProduct(positionToPlaceOn,spaceNeeded);
 
 }
 
-
 int main()
 {
     FillMirrorTable();
-    Product* kola  = new Product("kola",30,"30/4/20","koka-kola","0.5L",24,1001);
-    Product* fanta  = new Product("fanta",30,"30/4/20","koka-kola","0.5L",12,1002);
-    kokakola[0][0] = kola;
-    kokakola[0][1] = fanta;
-cout<<kokakola[0][1]->name<<endl;
+    AddNewProduct("kola",30,"30/4/20","koka-kola","0.5L",24);
+    AddNewProduct("fanta",30,"30/4/20","koka-kola","0.5L",12);
+   // PrintMirrorTable();
+    //PutTheProduct(0000,1);
+    PrintMirrorTable();
+    PrintMirrorTable();
+cout<<kokakola[0][0][1]->name<<endl;
 };
