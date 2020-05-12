@@ -30,7 +30,7 @@ public:
         this->note = note;
     }
 
-            Product(char* name, int timeToExp,char* dateOfEntry, char* supplier, char* unit, double amount)
+    Product(char* name, int timeToExp,char* dateOfEntry, char* supplier, char* unit, double amount)
     {
         this->name = name;
         this->timeToExp = timeToExp;
@@ -55,7 +55,7 @@ const int sizeOfShelf = 10;
 Product* kokakola[sizeOfShelf][sizeOfShelf][sizeOfShelf];
 bool mirrorTable[sizeOfShelf][sizeOfShelf][sizeOfShelf];
 
-void FillMirrorTable()
+void FillBothTables()
 {
     for(int i=0;i<sizeOfShelf;i++)
     {
@@ -64,6 +64,7 @@ void FillMirrorTable()
             for(int k=0;k<sizeOfShelf;k++)
             {
                 mirrorTable[i][j][k] = false;
+                kokakola[i][j][k] = nullptr;
 
             }
         }
@@ -78,8 +79,9 @@ void PrintMirrorTable()
             for(int k=0;k<sizeOfShelf;k++)
             {
                 if(mirrorTable[i][j][k])
-            {cout<<"There is a product at: "<<"i"<<i<<" j"<<j<<endl;
-            }
+                {
+                    cout<<"There is a product at: "<<i<<" "<<j<<" "<<k<<endl;
+                }
             }
         }
     }
@@ -101,8 +103,7 @@ unsigned int SearchForFreeSpace(unsigned int spaceNeeded)
                     currentSpace++;
                     if(currentSpace==spaceNeeded)
                     {
-                        cout<<"space found at: "<<i*pow(sizeOfShelf,2)+j*sizeOfShelf+(k-spaceNeeded+1)<<endl;
-                        return i*pow(sizeOfShelf,2)+j*sizeOfShelf+(k-spaceNeeded+1);
+                       return i*pow(sizeOfShelf,2)+j*sizeOfShelf+(k-spaceNeeded+1);
                     }
                 }
                 else currentSpace = 0;
@@ -111,24 +112,8 @@ unsigned int SearchForFreeSpace(unsigned int spaceNeeded)
     }
 
 }
-void PutTheProduct(unsigned int positionToPlaceOn,unsigned int spaceNeeded)
-{
-    for(int i=0;i<spaceNeeded;i++)
-    {
-        cout<<positionToPlaceOn/pow(sizeOfShelf,2)<<" "<<positionToPlaceOn/sizeOfShelf<<" "<<positionToPlaceOn%sizeOfShelf + i<<endl;
-        mirrorTable[positionToPlaceOn/sizeOfShelf*sizeOfShelf][positionToPlaceOn/sizeOfShelf][positionToPlaceOn%sizeOfShelf + i] = true;
-    }
-}
-void AddNewProduct(Product* newProduct)
-{
-    cout<<"AddNewProduct"<<endl;
-    unsigned int spaceNeeded = newProduct->getAmount()/50+1;
-    unsigned int positionToPlaceOn = SearchForFreeSpace(spaceNeeded);
-    newProduct->setLocation(positionToPlaceOn);
-    kokakola[positionToPlaceOn/sizeOfShelf*sizeOfShelf][positionToPlaceOn/sizeOfShelf][positionToPlaceOn%sizeOfShelf] = newProduct;
-    PutTheProduct(positionToPlaceOn,spaceNeeded);
 
-}
+//Създаваме продукт и го поставяме на първото свободно място, на което ще се събере
 void AddNewProduct(char* name, int timeToExp,char* dateOfEntry, char* supplier, char* unit, double amount)
 {
     cout<<"Creating and adding a new Product"<<endl;
@@ -137,18 +122,76 @@ void AddNewProduct(char* name, int timeToExp,char* dateOfEntry, char* supplier, 
     unsigned int positionToPlaceOn = SearchForFreeSpace(spaceNeeded);
     newProduct->setLocation(positionToPlaceOn);
     kokakola[positionToPlaceOn/sizeOfShelf*sizeOfShelf][positionToPlaceOn/sizeOfShelf][positionToPlaceOn%sizeOfShelf] = newProduct;
-    PutTheProduct(positionToPlaceOn,spaceNeeded);
+    for(int i=0;i<spaceNeeded;i++)
+    {
+        //cout<<positionToPlaceOn/pow(sizeOfShelf,2)<<" "<<positionToPlaceOn/sizeOfShelf<<" "<<positionToPlaceOn%sizeOfShelf + i<<endl;
+        mirrorTable[positionToPlaceOn/sizeOfShelf*sizeOfShelf][positionToPlaceOn/sizeOfShelf][positionToPlaceOn%sizeOfShelf + i] = true;
+    }
 
+}
+
+//премахваме определено количество от продукт
+void RemoveSetAmountOfProduct(char* removeName, double removeAmount)
+{
+    int shortestTimeToExp=10000;
+    cout<<shortestTimeToExp<<endl;
+    unsigned int positionOfShortest;
+    //Откриваме най-краткосрочния продукт от този вид
+    for(int i=0;i<sizeOfShelf;i++)
+    {
+        for(int j=0;j<sizeOfShelf;j++)
+        {
+            for(int k=0;k<sizeOfShelf;k++)
+            {
+                if(kokakola[i][j][k]!=nullptr)
+                {
+                    if(kokakola[i][j][k]->name==removeName&&kokakola[i][j][k]->timeToExp<shortestTimeToExp)
+                    {
+                    positionOfShortest = kokakola[i][j][k]->location;
+                    shortestTimeToExp = kokakola[i][j][k]->timeToExp;
+                    }
+                }
+
+            }
+        }
+    }
+    if(shortestTimeToExp!=10000)
+    {
+        if(kokakola[positionOfShortest/sizeOfShelf*sizeOfShelf][positionOfShortest/sizeOfShelf][positionOfShortest%sizeOfShelf]->amount>removeAmount)
+        {
+            //Взимаме част от най-краткосрочния продукт
+            kokakola[positionOfShortest/sizeOfShelf*sizeOfShelf][positionOfShortest/sizeOfShelf][positionOfShortest%sizeOfShelf]->amount = kokakola[positionOfShortest/sizeOfShelf*sizeOfShelf][positionOfShortest/sizeOfShelf][positionOfShortest%sizeOfShelf]->amount - removeAmount;
+        }
+        else
+        {
+            //Взимаме целия най-краткосрочен продукт, защото ни трябва точно толкова или повече
+            unsigned int howBigIsThis = kokakola[positionOfShortest/sizeOfShelf*sizeOfShelf][positionOfShortest/sizeOfShelf][positionOfShortest%sizeOfShelf]->amount/50+1;
+            double leftToGet =removeAmount - kokakola[positionOfShortest/sizeOfShelf*sizeOfShelf][positionOfShortest/sizeOfShelf][positionOfShortest%sizeOfShelf]->amount;
+            for(int p=0;p<howBigIsThis;p++)
+            {
+                mirrorTable[positionOfShortest/sizeOfShelf*sizeOfShelf][positionOfShortest/sizeOfShelf][positionOfShortest%sizeOfShelf+p]=false;
+            }
+            delete kokakola[positionOfShortest/sizeOfShelf*sizeOfShelf][positionOfShortest/sizeOfShelf][positionOfShortest%sizeOfShelf];
+            kokakola[positionOfShortest/sizeOfShelf*sizeOfShelf][positionOfShortest/sizeOfShelf][positionOfShortest%sizeOfShelf] = nullptr;
+            //Търсим си останалото
+            RemoveSetAmountOfProduct(removeName,leftToGet);
+        }
+    }
+    else {cout<<"Amount too low!"<<endl;}
 }
 
 int main()
 {
-    FillMirrorTable();
-    AddNewProduct("kola",30,"30/4/20","koka-kola","0.5L",24);
+    FillBothTables();
+    AddNewProduct("kola",10,"30/4/20","koka-kola","0.5L",10);
     AddNewProduct("fanta",30,"30/4/20","koka-kola","0.5L",12);
+    AddNewProduct("kola",20,"30/4/20","koka-kola","0.5L",20);
    // PrintMirrorTable();
-    //PutTheProduct(0000,1);
     PrintMirrorTable();
+    RemoveSetAmountOfProduct("kola",32);
     PrintMirrorTable();
-cout<<kokakola[0][0][1]->name<<endl;
+cout<<kokakola[0][0][1]->note<<endl;
+//cout<<mirrorTable[0][0][0]<<mirrorTable[0][0][1];
+
+
 };
