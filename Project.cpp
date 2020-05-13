@@ -1,14 +1,17 @@
 using namespace std;
 #include<iostream>
 #include <math.h>
-
+#include<ctime>
+#include<time.h>
+#include<fstream>
+#include<string>
 class Product
 {
 private:
 public:
     char* name;
     int timeToExp;
-    char* dateOfEntry;
+    time_t dateOfEntry;
     char* supplier;
     char* unit;
     double amount;
@@ -19,7 +22,7 @@ public:
     {
 
     }
-    Product(char* name, int timeToExp,char* dateOfEntry, char* supplier, char* unit, double amount, char* note)
+    Product(char* name, int timeToExp,time_t dateOfEntry, char* supplier, char* unit, double amount, char* note)
     {
         this->name = name;
         this->timeToExp = timeToExp;
@@ -30,7 +33,7 @@ public:
         this->note = note;
     }
 
-    Product(char* name, int timeToExp,char* dateOfEntry, char* supplier, char* unit, double amount)
+    Product(char* name, int timeToExp,time_t dateOfEntry, char* supplier, char* unit, double amount)
     {
         this->name = name;
         this->timeToExp = timeToExp;
@@ -47,6 +50,12 @@ public:
     unsigned int getAmount()
     {
         return amount;
+    }
+    void Print()
+    {
+        struct tm dateOfEntry;
+        dateOfEntry = *localtime(&(this->dateOfEntry));
+        cout<<"Name:"<<name<<" TimeToExpire:"<<timeToExp<<" day:"<<dateOfEntry.tm_mday<<" supplier:"<<supplier<<" unit:"<<unit<<" amount:"<<amount<<" note:"<<note<<endl;
     }
 
 
@@ -114,10 +123,12 @@ unsigned int SearchForFreeSpace(unsigned int spaceNeeded)
 }
 
 //Създаваме продукт и го поставяме на първото свободно място, на което ще се събере
-void AddNewProduct(char* name, int timeToExp,char* dateOfEntry, char* supplier, char* unit, double amount)
+void AddNewProduct(char* name, int timeToExp, char* supplier, char* unit, double amount)
 {
+    time_t now;
+    now=time(nullptr);
     cout<<"Creating and adding a new Product"<<endl;
-    Product* newProduct = new Product(name,timeToExp,dateOfEntry,supplier,unit,amount);
+    Product* newProduct = new Product(name,timeToExp,now,supplier,unit,amount);
     unsigned int spaceNeeded = newProduct->getAmount()/50+1;
     unsigned int positionToPlaceOn = SearchForFreeSpace(spaceNeeded);
     newProduct->setLocation(positionToPlaceOn);
@@ -183,15 +194,52 @@ void RemoveSetAmountOfProduct(char* removeName, double removeAmount)
 int main()
 {
     FillBothTables();
-    AddNewProduct("kola",10,"30/4/20","koka-kola","0.5L",10);
-    AddNewProduct("fanta",30,"30/4/20","koka-kola","0.5L",12);
-    AddNewProduct("kola",20,"30/4/20","koka-kola","0.5L",20);
-   // PrintMirrorTable();
+
+ //   AddNewProduct("kola",10,"koka-kola","0.5L",10);
+  //  AddNewProduct("fanta",30,"koka-kola","0.5L",12);
+  //  AddNewProduct("kola",20,"koka-kola","0.5L",20);
+
+
+time_t now;
+
+struct tm nowLocal;
+now=time(nullptr);
+nowLocal = *localtime(&now);
+cout<< nowLocal.tm_mday;
+/*
+ofstream writeStream;
+myfile.open("newfile.txt");
+myfile
+*/
+ifstream readStream;
+readStream.open("newfile.txt");
+if(readStream.fail())
+{
+    cerr<<"Error opening file!"<<endl;
+    exit(1);
+}
+char* name;
+int timeToExp;
+char* supplier;
+char* unit;
+double amount;
+while(!readStream.eof())
+{
+    readStream>>name;
+    cout<<name<<endl;
+    readStream>>timeToExp>>supplier>>unit>>amount;
+    cout<<name<<timeToExp<<supplier<<unit<<amount<<endl;
+//    AddNewProduct(name,timeToExp,supplier,unit,amount);
+}
+
+
     PrintMirrorTable();
     RemoveSetAmountOfProduct("kola",32);
     PrintMirrorTable();
-cout<<kokakola[0][0][1]->note<<endl;
-//cout<<mirrorTable[0][0][0]<<mirrorTable[0][0][1];
+    kokakola[0][0][1]->Print();
 
 
+
+
+return 0;
 };
