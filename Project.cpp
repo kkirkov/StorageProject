@@ -609,50 +609,38 @@ while(!readStream.eof())
     cout<<name<<expDate<<supplier<<unit<<amount<<endl;
     AddNewProduct(name,expDate,supplier,unit,amount);
 }
-int nextAction;
-while(nextAction != 6)
+cout<<"open, close, save, save as, help, exit, print, ad, remove, log, clean, bonus"<<endl;
+string nextAction;
+while(nextAction != "exit")
 {
-    cout<<"open-1, close-2, save-3, save as-4, help-5, exit-6, print-7, add-8, remove-9, log-10, clean-11, bonus-12"<<endl;
     cout<<"Next action:";
     cin>>nextAction;
-    switch(nextAction)
-    {
-        case 1: {
+       if(nextAction == "open") {
           fileName = OpenFile();
-        break;
         }
-
-        case 2:
+        else if(nextAction == "close")
         {
-            int command;
-            cout<<"open-1, exit-any other number"<<endl;
+            string command;
+            cout<<"open, exit"<<endl;
             cin>>command;
-            if(command==1)
+            if(command=="open")
             {
                 fileName = OpenFile();
             }
             else return 0;
-            break;
         }
-
-
-        case 3:
+        else if(nextAction == "save")
         {
             SaveFileAs(fileName);
-            break;
         }
-
-        case 4:
+        else if(nextAction == "save as")
         {
             cout<<"name of file:";
             cin>>fileName;
             cout<<endl;
             SaveFileAs(fileName);
-            break;
         }
-
-
-        case 5:
+        else if(nextAction == "help")
         {
             cout<<"open <file>	opens <file>"<<endl;
             cout<<"close			closes currently opened file"<<endl;
@@ -666,18 +654,13 @@ while(nextAction != 6)
             cout<<"log            print the log of product added or removed from the storage"<<endl;
             cout<<"clean          remove all the products that have expired or are about to expire"<<endl;
             cout<<"bonus          by product's price see what the loss will be for a period if it were to expire"<<endl;
-            break;
         }
-
-
-        case 7:
+        else if(nextAction == "print")
         {
             PrintAllInfoOnAllProducts();
             break;
         }
-
-
-        case 8:
+        else if(nextAction == "add")
         {
         cout<<"name:";
         cin>>name;
@@ -695,10 +678,8 @@ while(nextAction != 6)
         cin>>amount;
         cout<<endl;
         AddNewProduct(name,expDate,supplier,unit,amount);
-        break;
         }
-
-        case 9:
+        if(nextAction == "remove")
         {
         cout<<name;
         cin>>name;
@@ -707,10 +688,8 @@ while(nextAction != 6)
         cin>>amount;
         cout<<endl;
         RemoveSetAmountOfProduct(name,amount);
-        break;
         }
-
-        case 10:
+        if(nextAction == "log")
         {
         int Day;
         int Month;
@@ -735,20 +714,15 @@ while(nextAction != 6)
         cin>>Year;
         cout<<endl;
         PrintLogForPeriod(fromDate,Day + 100*Month + 10000*Year);
-        break;
         }
-
-        case 11:
+        else if(nextAction == "clean")
         {
         Clean();
-        break;
         }
-        case 12:
+        else if(nextAction == "open")
         {
         MoneyLoss();
-         break;
         }
-    }
 }
 
 return 0;
